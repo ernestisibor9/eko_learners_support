@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "eko-learners-support",
+    "name": "Eko-Learners-Support",
     "slug": "eko-learners-support",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -16,7 +16,8 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.ernzo.ekolearnerssupport"
     },
     "web": {
       "bundler": "metro",
@@ -37,6 +38,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "e0039de8-77dc-4f67-8439-48f9f94d5d05"
+      }
     }
   }
 }
