@@ -6,6 +6,8 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   StatusBar,
+  Platform,
+  SafeAreaView,
 } from "react-native";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { WebView } from "react-native-webview";
@@ -32,7 +34,6 @@ export default function VideoScreen() {
       });
   }, [id]);
 
-  // 🛠 Custom header style
   useLayoutEffect(() => {
     navigation.setOptions({
       title: "  Watch Video",
@@ -40,7 +41,6 @@ export default function VideoScreen() {
         backgroundColor: "#303B79",
         shadowColor: "transparent",
         elevation: 0,
-        height: 60,
       },
       headerTintColor: "#fff",
       headerTitleStyle: {
@@ -57,28 +57,42 @@ export default function VideoScreen() {
   }, [navigation]);
 
   if (loading) {
-    return <ActivityIndicator size="large" color="#0a84ff" style={{ flex: 1 }} />;
+    return (
+      <SafeAreaView style={styles.center}>
+        <ActivityIndicator size="large" color="#0a84ff" />
+      </SafeAreaView>
+    );
   }
 
-  if (!video) {
+  if (!video || !video.youtube_id) {
     return (
-      <View style={styles.center}>
-        <Text>Video not found</Text>
-      </View>
+      <SafeAreaView style={styles.center}>
+        <Text style={styles.errorText}>Video not found or unavailable.</Text>
+      </SafeAreaView>
     );
   }
 
   return (
     <>
-      <StatusBar backgroundColor="#303B79" barStyle="light-content" />
-      <View style={styles.container}>
+      <StatusBar
+        backgroundColor="#303B79"
+        barStyle={Platform.OS === "ios" ? "light-content" : "default"}
+      />
+      <SafeAreaView style={styles.container}>
         <WebView
-          source={{ uri: `https://www.youtube.com/embed/${video.youtube_id}` }}
+          source={{ uri: `https://www.youtube.com/embed/${video.youtube_id.trim()}` }}
           style={{ flex: 1 }}
           allowsFullscreenVideo
+          javaScriptEnabled
+          domStorageEnabled
+          originWhitelist={["*"]}
+          startInLoadingState
+          renderLoading={() => (
+            <ActivityIndicator size="large" color="#0a84ff" style={styles.center} />
+          )}
         />
         <Text style={styles.title}>{video.title}</Text>
-      </View>
+      </SafeAreaView>
     </>
   );
 }
@@ -93,10 +107,20 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     padding: 10,
     color: "#303B79",
+    backgroundColor: "#f8f9fa",
+    borderTopWidth: 1,
+    borderTopColor: "#eee",
   },
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#fff",
+  },
+  errorText: {
+    color: "#999",
+    fontSize: 16,
+    textAlign: "center",
+    paddingHorizontal: 20,
   },
 });

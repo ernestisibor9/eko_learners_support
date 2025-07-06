@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View, Platform } from "react-native";
 import React from "react";
 import { Tabs } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -10,80 +10,75 @@ const TabLayouts = () => {
     <Tabs
       screenOptions={{
         headerShown: false,
+        tabBarStyle: {
+          height: Platform.OS === "ios" ? 80 : 60,
+          paddingBottom: Platform.OS === "ios" ? 20 : 10,
+          paddingTop: 5,
+          borderTopWidth: 0.5,
+          borderTopColor: "#ddd",
+          backgroundColor: "#fff",
+          elevation: 5,
+        },
+        tabBarShowLabel: false,
+        tabBarActiveTintColor: "#0a84ff", // iOS Blue
+        tabBarInactiveTintColor: "#ccc",
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: "",
-          tabBarIcon: ({ focused }) => (
-            <View style={styles.iconContainer}>
-              <Ionicons
-                name={focused ? "home" : "home-outline"}
-                size={24}
-                color={focused ? "#0065F8" : "gray"}
-              />
-            </View>
+          title: "Home",
+          tabBarAccessibilityLabel: "Home Tab",
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons
+              name={focused ? "home" : "home-outline"}
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
+
       <Tabs.Screen
         name="subject"
         options={{
-          title: "",
-          tabBarIcon: ({ focused }) => (
-            <View style={styles.iconContainer}>
-              <FontAwesome5
-                name={focused ? "book" : "book"}
-                size={24}
-                color={focused ? "#0065F8" : "gray"}
-              />
-            </View>
+          title: "Subjects",
+          tabBarAccessibilityLabel: "Subjects Tab",
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome5 name="book" size={size} color={color} />
           ),
         }}
       />
+
       <Tabs.Screen
         name="find"
         options={{
-          title: "",
-          tabBarIcon: ({ focused }) => (
-            <View style={styles.iconContainer}>
-              <FontAwesome
-                name={focused ? "search" : "search"}
-                size={24}
-                color={focused ? "#0065F8" : "gray"}
-              />
-            </View>
+          title: "Find",
+          tabBarAccessibilityLabel: "Find Tab",
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome name="search" size={size} color={color} />
           ),
         }}
       />
+
       <Tabs.Screen
         name="contact"
         options={{
-          title: "",
-          tabBarIcon: ({ focused }) => (
-            <View style={styles.iconContainer}>
-              <FontAwesome
-                name={focused ? "envelope" : "envelope"}
-                size={24}
-                color={focused ? "#0065F8" : "gray"}
-              />
-            </View>
+          title: "Contact",
+          tabBarAccessibilityLabel: "Contact Tab",
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome name="envelope" size={size} color={color} />
           ),
         }}
       />
+
       <Tabs.Screen
         name="useful_link"
         options={{
-          title: "",
-          tabBarIcon: ({ focused }) => (
-            <View style={styles.iconContainer}>
-              <FontAwesome
-                name={focused ? "link" : "link"}
-                size={24}
-                color={focused ? "#0065F8" : "gray"}
-              />
-            </View>
+          title: "Useful Links",
+          tabBarAccessibilityLabel: "Links Tab",
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome name="link" size={size} color={color} />
           ),
         }}
       />
@@ -96,9 +91,8 @@ export default TabLayouts;
 const styles = StyleSheet.create({
   iconContainer: {
     alignItems: "center",
-    marginTop: 3,
-  },
-  iconText: {
-    fontSize: 10,
+    justifyContent: "center",
+    minHeight: 40,
+    minWidth: 40,
   },
 });

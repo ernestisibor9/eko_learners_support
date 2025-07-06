@@ -9,6 +9,9 @@ import {
   TouchableOpacity,
   Alert,
   Linking,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
 } from "react-native";
 
 export default function ContactScreen() {
@@ -24,6 +27,11 @@ export default function ContactScreen() {
     setForm({ ...form, [key]: value });
   };
 
+  const validateEmail = (email) => {
+    const regex = /\S+@\S+\.\S+/;
+    return regex.test(email);
+  };
+
   const handleSend = () => {
     const { name, email, subject, phone, message } = form;
 
@@ -32,9 +40,15 @@ export default function ContactScreen() {
       return;
     }
 
+    if (!validateEmail(email)) {
+      Alert.alert("Validation Error", "Please enter a valid email address.");
+      return;
+    }
+
     Alert.alert("Message Sent", "Thank you for contacting us!");
 
-    // Clear form
+    // TODO: Send to backend/API when ready
+
     setForm({
       name: "",
       email: "",
@@ -44,126 +58,154 @@ export default function ContactScreen() {
     });
   };
 
-  const openLink = (url) => {
-    Linking.openURL(url);
+  const openLink = async (url) => {
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert("Error", "This link cannot be opened.");
+      }
+    } catch (err) {
+      console.error("Failed to open URL:", err);
+      Alert.alert("Error", "Unable to open the link.");
+    }
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.logoContainer}>
-        <Image
-          source={require("../../assets/images/mobile-logo1.png")}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-        <Image
-          source={require("../../assets/images/mobile-logo2.png")}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-      </View>
-
-      <Text style={styles.heading}>Contact Us</Text>
-
-      <View style={styles.contactCard}>
-        <Image
-          source={require("../../assets/images/contact-img.jpg")}
-          style={styles.contactImage}
-        />
-        <View style={styles.formContainer}>
-          <Text style={styles.subheading}>Leave us a message</Text>
-
-          <View style={styles.row}>
-            <TextInput
-              style={styles.inputHalf}
-              placeholder="Your Name"
-              value={form.name}
-              onChangeText={(text) => updateField("name", text)}
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={{ flex: 1 }}
+      >
+        <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
+          <View style={styles.logoContainer}>
+            <Image
+              source={require("../../assets/images/mobile-logo1.png")}
+              style={styles.logo}
+              resizeMode="contain"
             />
-            <TextInput
-              style={styles.inputHalf}
-              placeholder="Your Email"
-              keyboardType="email-address"
-              value={form.email}
-              onChangeText={(text) => updateField("email", text)}
+            <Image
+              source={require("../../assets/images/mobile-logo2.png")}
+              style={styles.logo}
+              resizeMode="contain"
             />
           </View>
 
-          <TextInput
-            style={styles.input}
-            placeholder="Subject"
-            value={form.subject}
-            onChangeText={(text) => updateField("subject", text)}
-          />
+          <Text style={styles.heading}>Contact Us</Text>
 
-          <TextInput
-            style={styles.input}
-            placeholder="Phone Number"
-            keyboardType="phone-pad"
-            value={form.phone}
-            onChangeText={(text) => updateField("phone", text)}
-          />
+          <View style={styles.contactCard}>
+            <Image
+              source={require("../../assets/images/contact-img.jpg")}
+              style={styles.contactImage}
+            />
 
-          <TextInput
-            style={[styles.input, { height: 100 }]}
-            placeholder="Message"
-            multiline
-            textAlignVertical="top"
-            value={form.message}
-            onChangeText={(text) => updateField("message", text)}
-          />
+            <View style={styles.formContainer}>
+              <Text style={styles.subheading}>Leave us a message</Text>
 
-          <TouchableOpacity style={styles.button} onPress={handleSend}>
-            <Text style={styles.buttonText}>Send Message</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+              <View style={styles.row}>
+                <TextInput
+                  style={styles.inputHalf}
+                  placeholder="Your Name"
+                  value={form.name}
+                  onChangeText={(text) => updateField("name", text)}
+                  accessibilityLabel="Your Name"
+                />
+                <TextInput
+                  style={styles.inputHalf}
+                  placeholder="Your Email"
+                  keyboardType="email-address"
+                  value={form.email}
+                  onChangeText={(text) => updateField("email", text)}
+                  accessibilityLabel="Your Email"
+                  autoCapitalize="none"
+                />
+              </View>
 
-      <Text style={styles.subheading}>Our Offices</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Subject"
+                value={form.subject}
+                onChangeText={(text) => updateField("subject", text)}
+                accessibilityLabel="Subject"
+              />
 
-      <View style={styles.addressWrapper}>
-        {[
-          {
-            title: "Lagos School Online",
-            address:
-              "Ministry of Education Contact Office,\nBlock 5 Room 006 Secretariat Alausa,\nIkeja, Lagos, Nigeria",
-            email: "info@lagosschoolsonline.com",
-            phone: "(+234) 803 323 2771\n(+234) 818 760 9231",
-          },
-          {
-            title: "Global Education Media (Nig) Ltd",
-            address:
-              "11, Emina Crescent Off Toyin Street\nIkeja Lagos, Nigeria",
-            email: "info@globaleducmedia.com",
-            phone: "(+234) 812 120 1359\n(+234) 706 748 4223",
-          },
-          {
-            title: "Global Education Media UK Contact Office",
-            address:
-              "171, Shearwood Crescent Crayford,\nKent DA1 4TJ England",
-            email: "info@globaleducmedia.com",
-            phone: "(+44) 870 312 0374\n(+44) 798 411 1823",
-          },
-        ].map((office, index) => (
-          <View key={index} style={styles.card}>
-            <Text style={styles.cardTitle}>{office.title}</Text>
-            <Text style={styles.cardText}>{office.address}</Text>
-            <Text style={styles.cardText}>Email: {office.email}</Text>
-            <Text style={styles.cardText}>Phone: {office.phone}</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Phone Number"
+                keyboardType="phone-pad"
+                value={form.phone}
+                onChangeText={(text) => updateField("phone", text)}
+                accessibilityLabel="Phone Number"
+              />
+
+              <TextInput
+                style={[styles.input, { height: 100 }]}
+                placeholder="Message"
+                multiline
+                textAlignVertical="top"
+                value={form.message}
+                onChangeText={(text) => updateField("message", text)}
+                accessibilityLabel="Message"
+              />
+
+              <TouchableOpacity
+                style={styles.button}
+                onPress={handleSend}
+                accessibilityRole="button"
+              >
+                <Text style={styles.buttonText}>Send Message</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        ))}
-      </View>
 
-      <Text style={styles.footer}>
-        © {new Date().getFullYear()} Global Education Media All Rights Reserved | Designed by{" "}
-        <Text
-          style={styles.link}
-          onPress={() => openLink("https://alabiansolutions.com/")}
-        >
-          Alabian Solutions
-        </Text>
-      </Text>
-    </ScrollView>
+          <Text style={styles.subheading}>Our Offices</Text>
+
+          <View style={styles.addressWrapper}>
+            {[
+              {
+                title: "Lagos School Online",
+                address:
+                  "Ministry of Education Contact Office,\nBlock 5 Room 006 Secretariat Alausa,\nIkeja, Lagos, Nigeria",
+                email: "info@lagosschoolsonline.com",
+                phone: "(+234) 803 323 2771\n(+234) 818 760 9231",
+              },
+              {
+                title: "Global Education Media (Nig) Ltd",
+                address:
+                  "11, Emina Crescent Off Toyin Street\nIkeja Lagos, Nigeria",
+                email: "info@globaleducmedia.com",
+                phone: "(+234) 812 120 1359\n(+234) 706 748 4223",
+              },
+              {
+                title: "Global Education Media UK Contact Office",
+                address:
+                  "171, Shearwood Crescent Crayford,\nKent DA1 4TJ England",
+                email: "info@globaleducmedia.com",
+                phone: "(+44) 870 312 0374\n(+44) 798 411 1823",
+              },
+            ].map((office, index) => (
+              <View key={index} style={styles.card}>
+                <Text style={styles.cardTitle}>{office.title}</Text>
+                <Text style={styles.cardText}>{office.address}</Text>
+                <Text style={styles.cardText}>Email: {office.email}</Text>
+                <Text style={styles.cardText}>Phone: {office.phone}</Text>
+              </View>
+            ))}
+          </View>
+
+          <Text style={styles.footer}>
+            © {new Date().getFullYear()} Global Education Media. All Rights Reserved | Designed by{" "}
+            <Text
+              style={styles.link}
+              onPress={() => openLink("https://alabiansolutions.com/")}
+            >
+              Alabian Solutions
+            </Text>
+          </Text>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
@@ -225,7 +267,6 @@ const styles = StyleSheet.create({
     borderColor: "#ddd",
     borderRadius: 8,
     padding: 12,
-    marginBottom: 10,
   },
   inputHalf: {
     flex: 1,
@@ -273,6 +314,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#777",
     marginBottom: 30,
+    paddingHorizontal: 10,
   },
   link: {
     color: "#0a84ff",

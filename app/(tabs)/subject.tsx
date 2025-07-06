@@ -9,32 +9,38 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Dimensions,
+  Platform,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const screenWidth = Dimensions.get("window").width;
-const cardWidth = (screenWidth - 45) / 2; // For 2 cards per row with padding
+const cardWidth = (screenWidth - 45) / 2;
 
 export default function SubjectsScreen() {
   const [search, setSearch] = useState("");
   const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const router = useRouter();
 
   useEffect(() => {
-    fetch("https://ekolearnerssupport.com/api/all-subjects.php")
-      .then((res) => res.json())
-      .then((data) => {
-        setSubjects(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch subjects", err);
-        setLoading(false);
-      });
+    fetchSubjects();
   }, []);
+
+  const fetchSubjects = async () => {
+    try {
+      const res = await fetch("https://ekolearnerssupport.com/api/all-subjects.php");
+      const data = await res.json();
+      setSubjects(data);
+    } catch (error) {
+      console.error("Failed to fetch subjects", error);
+      Alert.alert("Error", "Unable to load subjects. Please check your connection.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const renderSubjectCard = (item) => (
     <TouchableOpacity
@@ -46,6 +52,8 @@ export default function SubjectsScreen() {
           params: { id: item.id, name: item.name },
         })
       }
+      accessibilityRole="button"
+      accessibilityLabel={`View videos for ${item.name}`}
     >
       <Image
         source={{ uri: `https://ekolearnerssupport.com/images/${item.photo}` }}
@@ -62,62 +70,66 @@ export default function SubjectsScreen() {
   );
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={{ paddingBottom: 40 }}
-    >
-      {/* Logo Section */}
-      <View style={styles.logoContainer}>
-        <Image
-          source={require("../../assets/images/mobile-logo1.png")}
-          style={styles.logo2}
-          resizeMode="contain"
-        />
-        <Image
-          source={require("../../assets/images/mobile-logo2.png")}
-          style={styles.logo2}
-          resizeMode="contain"
-        />
-      </View>
-
-      {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <Ionicons
-          name="search"
-          size={20}
-          color="#555"
-          style={{ marginRight: 10 }}
-        />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search subjects..."
-          value={search}
-          onChangeText={setSearch}
-          placeholderTextColor="#888"
-        />
-      </View>
-
-      <Text style={styles.sectionTitle}>All Subjects</Text>
-
-      {loading ? (
-        <ActivityIndicator size="large" color="#0a84ff" />
-      ) : filteredSubjects.length > 0 ? (
-        <View style={styles.subjectList}>
-          {filteredSubjects.map(renderSubjectCard)}
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{ paddingBottom: 40 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Logo Section */}
+        <View style={styles.logoContainer}>
+          <Image
+            source={require("../../assets/images/mobile-logo1.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Image
+            source={require("../../assets/images/mobile-logo2.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
         </View>
-      ) : (
-        <Text style={styles.notFoundText}>
-          No subjects found for "{search}"
-        </Text>
-      )}
-    </ScrollView>
+
+        {/* Search Bar */}
+        <View style={styles.searchContainer}>
+          <Ionicons name="search" size={20} color="#555" style={{ marginRight: 10 }} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search subjects..."
+            value={search}
+            onChangeText={setSearch}
+            placeholderTextColor="#888"
+            returnKeyType="search"
+            accessibilityLabel="Search for subjects"
+          />
+        </View>
+
+        <Text style={styles.sectionTitle}>All Subjects</Text>
+
+        {loading ? (
+          <ActivityIndicator size="large" color="#0a84ff" />
+        ) : filteredSubjects.length > 0 ? (
+          <View style={styles.subjectList}>
+            {filteredSubjects.map(renderSubjectCard)}
+          </View>
+        ) : (
+          <Text style={styles.notFoundText}>
+            No subjects found for "{search}"
+          </Text>
+        )}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
   container: {
     flex: 1,
-    paddingTop: 50,
+    paddingTop: Platform.OS === "ios" ? 10 : 50,
     paddingHorizontal: 15,
     backgroundColor: "#fff",
   },
@@ -130,7 +142,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 20,
   },
-  logo2: {
+  logo: {
     width: 100,
     height: 70,
     marginHorizontal: 8,
